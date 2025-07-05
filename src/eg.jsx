@@ -8,9 +8,9 @@ export default function ImageFetcher() {
 
   useEffect(() => {
     fetch("https://dummyjson.com/image/400x200/008080/ffffff?text=Hello+Peter") // image binary
-      .then((res) => res.blob()) // ⬅️ Get the raw binary
+      .then((res) => res.blob()) 
       .then((blob) => {
-        const url = URL.createObjectURL(blob); // ⬅️ Convert to blob URL
+        const url = URL.createObjectURL(blob); 
         setImageBlobUrl(url);
         setLoading(false);
       })

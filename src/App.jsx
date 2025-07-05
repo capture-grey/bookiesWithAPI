@@ -1,8 +1,64 @@
-import React from "react";
-import HomeCarousel from "./components/home/HomeCarousel";
-import SimpleCarousel from "../React_Basics/SimpleCarousel";
-import ImageFetcher from "./eg";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { createContext, useEffect, useState } from "react";
+import HomePage from "./pages/HomePage";
+import ForumPage from "./pages/ForumPage";
+
+export const SessionDataContext = createContext();
 
 export default function App() {
-  return <HomeCarousel />;
+  const [userID] = useState("u000");
+  const [pinnedForums, setPinnedForums] = useState(["forum001", "forum003"]);
+  const [sessionData, setSessionData] = useState(null);
+  const [secondaryData, setSecondaryData] = useState(null);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(
+          "https://dummyjson.com/c/70a5-ddfe-435d-8e3e"
+        );
+        if (!response.ok)
+          throw new Error(`HTTP error! status: ${response.status}`);
+        const data = await response.json();
+        setSessionData(data);
+        setSecondaryData(data);
+      } catch (err) {
+        console.error("API fetch failed:", err);
+      }
+    };
+    fetchData();
+  }, []);
+
+  return (
+    <Router>
+      <SessionDataContext.Provider
+        value={{
+          userID,
+          sessionData,
+          secondaryData,
+          pinnedForums,
+          setPinnedForums,
+        }}
+      >
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <div className="app-container">
+                <HomePage />
+              </div>
+            }
+          />
+          <Route
+            path="/forums/:forumId"
+            element={
+              <div className="app-container">
+                <ForumPage />
+              </div>
+            }
+          />
+        </Routes>
+      </SessionDataContext.Provider>
+    </Router>
+  );
 }
