@@ -9,7 +9,7 @@ export default function App() {
   const [userID] = useState("u000");
   const [pinnedForums, setPinnedForums] = useState(["forum001", "forum003"]);
   const [sessionData, setSessionData] = useState(null);
-  const [secondaryData, setSecondaryData] = useState(null);
+  const [hiddenByUserList, setHiddenByUserList] = useState([3, 0]); // for user's personal list
 
   useEffect(() => {
     const fetchData = async () => {
@@ -20,8 +20,16 @@ export default function App() {
         if (!response.ok)
           throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
-        setSessionData(data);
-        setSecondaryData(data);
+
+        const dataWithHidden = {
+          ...data,
+          forums: data.forums.map((forum) => ({
+            ...forum,
+            adminHidden: [], // for admin-hidden content
+            userHidden: [], // for user-hidden content
+          })),
+        };
+        setSessionData(dataWithHidden);
       } catch (err) {
         console.error("API fetch failed:", err);
       }
@@ -35,9 +43,11 @@ export default function App() {
         value={{
           userID,
           sessionData,
-          secondaryData,
           pinnedForums,
           setPinnedForums,
+          hiddenByUserList,
+          setHiddenByUserList,
+          setSessionData,
         }}
       >
         <Routes>

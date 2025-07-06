@@ -49,7 +49,6 @@ export default function HomeCarousel() {
 
     return () => {
       isMounted = false;
-      // ✅ Cleanup only the new blob URLs
       newBlobUrls.forEach((url) => URL.revokeObjectURL(url));
     };
   }, []);

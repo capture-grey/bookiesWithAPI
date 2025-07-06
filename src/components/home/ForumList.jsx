@@ -3,8 +3,7 @@ import { SessionDataContext } from "../../App";
 import ForumCard from "./ForumCard";
 
 export default function ForumList() {
-  const { sessionData, pinnedForums, setPinnedForums, userID } =
-    useContext(SessionDataContext);
+  const { sessionData, pinnedForums, setPinnedForums, userID } = useContext(SessionDataContext);
 
   if (!sessionData) return <div>Loading forums...</div>;
 
