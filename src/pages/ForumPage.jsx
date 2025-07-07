@@ -1,230 +1,223 @@
+"use client";
+
 import { useParams } from "react-router-dom";
-import { useContext, useState, useEffect } from "react";
+import { useContext } from "react";
 import { SessionDataContext } from "../App";
-import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Heart,
+  BookOpen,
+  Users,
+  MessageSquare,
+  Share2,
+  LogOut,
+  Info,
+} from "lucide-react";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
+
+import Banner from "../components/forumpage/Banner";
 
 export default function ForumPage() {
   const { forumId } = useParams();
-  const { userID, sessionData, setSessionData } =
-    useContext(SessionDataContext);
-
-  const [isEditing, setIsEditing] = useState(false);
-  const [selectedBooks, setSelectedBooks] = useState([]);
-  const [currentUser, setCurrentUser] = useState(null);
-
-  useEffect(() => {
-    if (sessionData && forumId) {
-      const forum = sessionData.forums.find((f) => f.forumId === forumId);
-      const user = forum?.members.find((m) => m.userId === userID);
-      setCurrentUser(user);
-
-      if (isEditing && forum) {
-        const availableBooks = forum.members.flatMap((member) =>
-          member.books.filter(
-            (bookIndex) => !forum.adminHidden.includes(bookIndex)
-          )
-        );
-        setSelectedBooks(availableBooks);
-      }
-    }
-  }, [sessionData, forumId, userID, isEditing]);
+  const { sessionData } = useContext(SessionDataContext);
 
   if (!sessionData) return <div>Loading...</div>;
 
   const forum = sessionData.forums.find((f) => f.forumId === forumId);
   if (!forum) return <div>Forum not found</div>;
 
-  const isAdminOrModerator =
-    currentUser?.role === "admin" || currentUser?.role === "moderator";
-
-  const toggleEdit = () => {
-    if (!isAdminOrModerator) return;
-
-    if (!isEditing) {
-      const availableBooks = forum.members.flatMap((member) =>
-        member.books.filter(
-          (bookIndex) => !forum.adminHidden.includes(bookIndex)
-        )
-      );
-      setSelectedBooks(availableBooks);
-    } else {
-      const allBooks = forum.members.flatMap((member) => member.books);
-      const newAdminHidden = allBooks.filter(
-        (bookIndex) => !selectedBooks.includes(bookIndex)
-      );
-
-      setSessionData((prev) => ({
-        ...prev,
-        forums: prev.forums.map((f) =>
-          f.forumId === forumId ? { ...f, adminHidden: newAdminHidden } : f
-        ),
-      }));
-
-      setSelectedBooks([]);
-    }
-
-    setIsEditing(!isEditing);
-  };
-
-  const toggleBookSelection = (bookIndex) => {
-    setSelectedBooks((prev) =>
-      prev.includes(bookIndex)
-        ? prev.filter((id) => id !== bookIndex)
-        : [...prev, bookIndex]
-    );
-  };
-
-  // Get books based on current mode
   const getBooksToDisplay = () => {
-    if (isEditing) {
-      return forum.members.flatMap((member) =>
-        member.books.map((bookIndex) => {
+    return forum.members.flatMap((member) => {
+      return member.books
+        .filter((bookIndex) => !forum.adminHidden.includes(bookIndex))
+        .map((bookIndex) => {
           const book = sessionData.books[bookIndex];
           return {
-            bookIndex,
-            title: book?.title || "Unknown Book",
+            id: bookIndex,
+            name: book?.title || "Unknown Book",
             author: book?.author || "Unknown Author",
-            categories: book?.category?.join(", ") || "Uncategorized",
+            category: book?.category || ["Uncategorized"],
+            likes: book?.liked || 0,
             owner: member.name,
             ownerRole: member.role,
-            liked: book?.liked || 0,
-            isHidden: forum.adminHidden.includes(bookIndex),
           };
-        })
-      );
-    } else {
-      // Normal mode - only show available books
-      return forum.members.flatMap((member) =>
-        member.books
-          .filter((bookIndex) => !forum.adminHidden.includes(bookIndex))
-          .map((bookIndex) => {
-            const book = sessionData.books[bookIndex];
-            return {
-              bookIndex,
-              title: book?.title || "Unknown Book",
-              author: book?.author || "Unknown Author",
-              categories: book?.category?.join(", ") || "Uncategorized",
-              owner: member.name,
-              ownerRole: member.role,
-              liked: book?.liked || 0,
-              isHidden: false,
-            };
-          })
-      );
-    }
+        });
+    });
   };
 
   const booksToDisplay = getBooksToDisplay();
-  const availableBooksCount = forum.members
-    .flatMap((member) => member.books)
-    .filter((bookIndex) => !forum.adminHidden.includes(bookIndex)).length;
+
+  // Simple like toggle handler (would need proper implementation)
+  const toggleLike = (bookId) => {
+    console.log("Toggled like for book:", bookId);
+  };
 
   return (
-    <div className="forum-page p-6">
-      <h1 className="text-2xl font-bold mb-4">{forum.forumName} - All Books</h1>
-      <p className="text-gray-600 mb-6">{forum.description}</p>
-
-      {isAdminOrModerator && (
-        <div className="mb-4">
-          <button
-            onClick={toggleEdit}
-            className={`border px-[10px] py-[5px] rounded transition delay-150 duration-300 ease-in-out hover:-translate-y-1 ${
-              isEditing ? "bg-red-500 text-white" : "bg-black text-amber-50"
-            }`}
-          >
-            {isEditing ? "Done Hiding" : "Edit Forum"}
-          </button>
+    <div className="flex justify-center relative">
+      <div className="first mx-auto">
+        <div className="my-6">
+          <h1 className="text-xl text-black/80 font-bold">{forum.forumName}</h1>
         </div>
-      )}
+        {/* ------------------------------------------ */}
 
-      <div className="overflow-x-auto mt-4">
-        <table className="min-w-full bg-white border border-gray-200">
-          <thead className="bg-gray-50">
-            <tr>
-              {isEditing && (
-                <th className="py-3 px-4 border-b text-left">Visibility</th>
+        <div className="InfoRow flex mb-5 max-w-[1080px] gap-2">
+          <div className="flex justify-center border border-[#d4cba2] px-3 py-2 rounded-full gap-1 grow ">
+            <BookOpen size={19} className="mt-[4px]" />
+            <span>
+              {forum.members.reduce(
+                (sum, member) => sum + member.books.length,
+                0
               )}
-              <th className="py-3 px-4 border-b text-left">Book Title</th>
-              <th className="py-3 px-4 border-b text-left">Author</th>
-              <th className="py-3 px-4 border-b text-left">Categories</th>
-              <th className="py-3 px-4 border-b text-left">Likes</th>
-              <th className="py-3 px-4 border-b text-left">Owned By</th>
-              <th className="py-3 px-4 border-b text-left">User Role</th>
-            </tr>
-          </thead>
-          <tbody>
-            {booksToDisplay.map((book, index) => {
-              const isSelected = selectedBooks.includes(book.bookIndex);
+            </span>
+            <span className="hidden md:block">Books</span>
+          </div>
+          <div className="flex justify-center border border-[#d4cba2] px-3 py-2 rounded-full gap-1 grow">
+            <Users size={19} className="mt-[2px]" />
+            <span>{forum.members.length}</span>
+            <span className="hidden md:block">Members</span>
+          </div>
+          <div className="flex justify-center border border-[#d4cba2] px-3 py-2 rounded-full gap-1 grow">
+            <MessageSquare size={19} className="mt-[4px]" />
+            <span className="hidden md:block">Messenger</span>
+          </div>
+          <div className="flex justify-center border border-[#d4cba2] px-3 py-2 rounded-full gap-1 grow">
+            <Share2 size={19} className="mt-[4px]" />
+            <span className="hidden md:block">Share</span>
+          </div>
+        </div>
 
-              return (
+        {/* ------------------------------------------------ */}
+
+        <div className="max-w-[1080px] mb-5">
+          <Banner />
+        </div>
+
+        <div className="max-w-[1080px] overflow-x-hidden">
+          <span className="text-black/75 text-[15px] mb-1">
+            Combined book list of all members
+          </span>
+          <table className="w-full table-auto text-xs sm:text-sm border border-[#d4cba2] rounded">
+            <thead className="bg-[#f9f7f3] text-muted-foreground">
+              <tr>
+                <th className="text-left px-2 py-2 max-w-[120px] whitespace-normal break-words">
+                  Name
+                </th>
+                <th className="text-left px-2 py-2 max-w-[100px] whitespace-normal break-words">
+                  Author
+                </th>
+                <th className="text-left px-2 py-2 max-w-[90px] whitespace-normal break-words">
+                  Category
+                </th>
+                <th className="text-center px-4 py-2 w-[60px]">Likes</th>
+              </tr>
+            </thead>
+            <tbody>
+              {booksToDisplay.map((book) => (
                 <tr
-                  key={`${book.bookIndex}-${index}`}
-                  className={`hover:bg-gray-50 ${
-                    book.isHidden ? "opacity-60 bg-gray-100" : ""
-                  }`}
+                  key={book.id}
+                  className="border-t align-top hover:bg-muted/50"
                 >
-                  {isEditing && (
-                    <td className="py-3 px-4 border-b">
-                      <Checkbox
-                        checked={isSelected}
-                        onCheckedChange={() =>
-                          toggleBookSelection(book.bookIndex)
-                        }
-                        className="font-extralight"
-                      />
-                    </td>
-                  )}
-                  <td className="py-3 px-4 border-b">{book.title}</td>
-                  <td className="py-3 px-4 border-b">{book.author}</td>
-                  <td className="py-3 px-4 border-b">{book.categories}</td>
-                  <td className="py-3 px-4 border-b">{book.liked}</td>
-                  <td className="py-3 px-4 border-b">{book.owner}</td>
-                  <td
-                    className={`py-3 px-4 border-b ${
-                      book.ownerRole === "admin"
-                        ? "text-yellow-600 font-medium"
-                        : book.ownerRole === "moderator"
-                        ? "text-blue-600"
-                        : "text-gray-600"
-                    }`}
-                  >
-                    {book.ownerRole}
+                  <td className="px-2 py-2 whitespace-normal break-words">
+                    {book.name}
+                  </td>
+                  <td className="px-2 py-2 whitespace-normal break-words">
+                    {book.author}
+                  </td>
+                  <td className="px-2 py-2 whitespace-normal break-words">
+                    {book.category.map((cat, i) => (
+                      <span
+                        key={i}
+                        className="inline-block mr-1 mb-1 bg-gray-200 px-1 py-0.5 rounded text-xs"
+                      >
+                        {cat}
+                      </span>
+                    ))}
+                  </td>
+                  <td className="px-4 py-2 text-center md:text-left">
+                    <div className="flex flex-col md:flex-row items-center md:items-start gap-0.5 md:gap-2">
+                      <button
+                        onClick={() => toggleLike(book.id)}
+                        className="text-gray-400 hover:text-purple-400 transition-colors"
+                      >
+                        <Heart className="w-4 h-4" fill="none" />
+                      </button>
+                      <span className="text-[10px] sm:text-xs">
+                        {book.likes}
+                      </span>
+                    </div>
                   </td>
                 </tr>
-              );
-            })}
-          </tbody>
-        </table>
-      </div>
-
-      <div className="mt-6 text-sm text-gray-500">
-        {isEditing ? (
-          <>
-            Showing {booksToDisplay.length} books in forum
-            <br />
-            <span className="text-blue-600">
-              {selectedBooks.length} books selected to remain visible
-            </span>
-          </>
-        ) : (
-          `Showing ${availableBooksCount} available books owned by ${forum.members.length} members`
-        )}
-      </div>
-
-      {isEditing && (
-        <div className="mt-4 text-sm text-blue-600">
-          {selectedBooks.length === availableBooksCount ? (
-            "All available books are selected (will remain visible)"
-          ) : (
-            <>
-              {selectedBooks.length} book(s) selected to remain visible
-              <br />
-              {booksToDisplay.length - selectedBooks.length} book(s) will be
-              hidden
-            </>
-          )}
+              ))}
+            </tbody>
+          </table>
         </div>
-      )}
+
+        <div className="mt-4 text-sm text-muted-foreground">
+          Showing {booksToDisplay.length} books
+        </div>
+      </div>
+      {/* _________________________ */}
+      <div className="second absolute hidden lg:block inset-y-0 right-10 top-20">
+        <div className="mb-6 border border-[#eae2c8] w-full max-w-[300px] rounded-xl p-5 bg-white">
+          <div className="space-y-4">
+            {/* Forum Title */}
+            <h2 className="text-xl font-bold text-black/80">Info</h2>
+
+            {/* Description */}
+            <div>
+              <p className="text-sm text-gray-700">{forum.description}</p>
+            </div>
+
+            <div className="flex flex-col gap-2 text-sm">
+              <div className="flex gap-1">
+                <p className="text-muted-foreground font-medium">Location:</p>
+                <p>{forum.location}</p>
+              </div>
+              <div className="flex gap-1">
+                <p className="text-muted-foreground font-medium">Created</p>
+                <p>{new Date(forum.createdAt).toLocaleDateString()}</p>
+              </div>
+            </div>
+            <hr className="w-[50px]" />
+            {/* Rules Accordion */}
+            <div className="p-0 m-0">
+              <h1 className="text-l font-bold text-black/80">Rules</h1>
+              <Accordion type="single" collapsible className="w-full p-0 m-0">
+                {forum.rules.map((rule, index) => (
+                  <AccordionItem key={index} value={`rule-${index}`}>
+                    <AccordionTrigger className="text-sm font-medium hover:no-underline">
+                      <span className="hover:underline">{rule.title}</span>
+                    </AccordionTrigger>
+                    <AccordionContent className="text-sm text-gray-700 pl-1 pt-1">
+                      {rule.body}
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+            </div>
+            {/* Allowed Categories */}
+            <div>
+              <h3 className="text-sm font-medium text-muted-foreground mb-2">
+                Allowed Categories
+              </h3>
+              <div className="flex flex-wrap gap-2">
+                {forum.allowedCategories.map((category, index) => (
+                  <span
+                    key={index}
+                    className="inline-block bg-gray-200 px-2.5 py-1 rounded-full text-xs"
+                  >
+                    {category}
+                  </span>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

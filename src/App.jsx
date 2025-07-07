@@ -2,6 +2,8 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { createContext, useEffect, useState } from "react";
 import HomePage from "./pages/HomePage";
 import ForumPage from "./pages/ForumPage";
+import { Navbar } from "./components/common/Navbar";
+import Cavbar from "./components/common/Cavbar";
 
 export const SessionDataContext = createContext();
 
@@ -10,6 +12,7 @@ export default function App() {
   const [pinnedForums, setPinnedForums] = useState(["forum001", "forum003"]);
   const [sessionData, setSessionData] = useState(null);
   const [hiddenByUserList, setHiddenByUserList] = useState([3, 0]); // for user's personal list
+  const [recentForums, setRecentForums] = useState([]);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -43,13 +46,16 @@ export default function App() {
         value={{
           userID,
           sessionData,
+          setSessionData,
           pinnedForums,
           setPinnedForums,
           hiddenByUserList,
           setHiddenByUserList,
-          setSessionData,
+          recentForums,
+          setRecentForums,
         }}
       >
+        <Cavbar />
         <Routes>
           <Route
             path="/"
