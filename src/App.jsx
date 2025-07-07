@@ -4,6 +4,7 @@ import HomePage from "./pages/HomePage";
 import ForumPage from "./pages/ForumPage";
 import { Navbar } from "./components/common/Navbar";
 import Cavbar from "./components/common/Cavbar";
+import Footer from "./components/common/Footer";
 
 export const SessionDataContext = createContext();
 
@@ -55,7 +56,9 @@ export default function App() {
           setRecentForums,
         }}
       >
-        <Cavbar />
+        <div className="sticky top-0 z-50 bg-white shadow-sm">
+          <Cavbar />
+        </div>
         <Routes>
           <Route
             path="/"
@@ -74,6 +77,7 @@ export default function App() {
             }
           />
         </Routes>
+        <Footer />
       </SessionDataContext.Provider>
     </Router>
   );

@@ -23,7 +23,7 @@ export default function Cavbar() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <>
+    <nav className="w-full border-b border-[#d4cba2] bg-white">
       <div className="w-full bg-[#f9f7f3] h-13 flex items-center justify-between border border-[#d4cba2]">
         <div className="flex justify-start items-center gap-5 ml-1">
           {/* Replace PanelRight with Menu icon for sidebar toggle */}
@@ -140,6 +140,6 @@ export default function Cavbar() {
 
       {/* Sidebar Component */}
       <MainSidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
-    </>
+    </nav>
   );
 }
